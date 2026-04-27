@@ -41,8 +41,8 @@
 - `<name>`: <brief description>
 
 ### Modified Capabilities
-<!-- Existing capabilities whose REQUIREMENTS are changing. Use names from openspec/specs/. Leave empty if none. -->
-- `<existing-name>`: <what requirement changes>
+<!-- Existing capabilities whose behavior requirements or implementation-oriented landing details are changing. Include changes to scenarios, design linkage, file ownership, core code landing, component/module split, impact surface, or task breakdown guidance. Use names from openspec/specs/. Leave empty if none. -->
+- `<existing-name>`: <what behavior or landing detail changes>
 
 ## Impact
 

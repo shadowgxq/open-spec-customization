@@ -1,6 +1,8 @@
 # 自定义 OpenSpec 通用工作流说明
 
-本文档基于当前目录结构与 `schema.yaml`，用于说明 `spec-parallel` 通用 OpenSpec 工作流的阶段、落地型 specs、subagent 并行语义、产物依赖和 Bugfix 回写规则。
+本文档基于当前目录结构与 `schema.yaml`，用于说明 `spec-parallel` 通用 OpenSpec 工作流的阶段、自定义落地型 specs、subagent 并行语义、产物依赖和 Bugfix 回写规则。
+
+重要说明：`spec-parallel` 是 intentionally custom 的 implementation-oriented workflow。它保留 OpenSpec 的 `proposal -> specs -> design -> tasks -> apply` 思路和 delta spec 格式，但故意让 `specs/**/*.md` 承担比官方默认 behavior-only spec 更重的落地约束职责，用来降低 AI/code agent 实现跑偏的概率。
 
 ## 当前结构
 
@@ -38,8 +40,8 @@
 flowchart TD
     A["用户提出变更目标"] --> B["proposal.md<br/>PRD: 需求、场景、边界、验收"]
 
-    B --> C1["specs subagent<br/>specs/**/*.md<br/>落地型 specs: 行为、场景、代码分析、组件规格、影响面"]
-    B --> C2["design subagent<br/>design.md<br/>技术方案: 架构、API、组件、决策"]
+    B --> C1["specs subagent<br/>specs/**/*.md<br/>自定义落地型 specs: 行为、场景、Design linkage、组件化拆分、影响面"]
+    B --> C2["design subagent<br/>design.md<br/>技术方案: 需求概述、架构、API、组件"]
 
     C1 --> C3["主 agent<br/>等待、冲突检查、design/specs 对齐"]
     C2 --> C3
@@ -79,9 +81,7 @@ flowchart TD
 
 ### design.md
 
-`design.md` 是高层技术方案/source of truth for architecture decisions，负责回答如何从架构、API、组件策略和关键技术决策上实现 proposal。
-
-`design.md` 必须由独立 design subagent 生成。该 subagent 的写入范围只限 `design.md`，不得写 `specs/**/*.md` 或 `tasks.md`。
+`design.md` 是 top-level technical design，负责回答整体技术方案怎么定。它不负责把每个 requirement 拆到具体代码落点；这些落地细节属于自定义 `specs/**/*.md`。
 
 必须覆盖：
 
@@ -89,15 +89,18 @@ flowchart TD
 - 架构设计
 - API 设计；无 API 变化时写 `Not applicable`
 - 组件设计
+
+可选覆盖：
+
 - 技术决策与取舍
 - 风险与缓解
 - Open Questions；无未决问题时写 `None`
 
-如果 Bugfix 后发现架构、API contract、组件策略或关键技术决策变化，需要回写 `design.md`。
+如果 Bugfix 后发现 top-level architecture、API contract、component strategy 或 key technical decision 变化，需要回写 `design.md`。
 
 ### specs/**/*.md
 
-`specs/**/*.md` 是落地型 specs，负责描述可测试的行为变化、用户场景，以及该 capability 的具体代码落地规格。
+`specs/**/*.md` 是本 workflow 的自定义落地型 specs。它不是纯官方 behavior-only spec；它既描述可测试的行为变化和用户场景，也记录“如何把 `design.md` 的技术方案落到每个 capability”的具体实现约束。
 
 `specs/**/*.md` 必须由独立 specs subagent 生成。该 subagent 的写入范围只限 `specs/**/*.md`，不得写 `design.md` 或 `tasks.md`。specs subagent 可以和 design subagent 并行做仓库代码分析、组件规格、文件修改边界和影响面判断；主 agent 在生成 `tasks.md` 前负责和 `design.md` 对齐。
 
@@ -107,28 +110,34 @@ flowchart TD
 - 每个 requirement 使用 `### Requirement:`
 - 每个 scenario 使用 `#### Scenario:`
 - 使用 SHALL/MUST 描述规范行为
-- spec 模板和生成规则必须保持通用，不携带业务逻辑、领域示例、具体业务实体、字段名、API 名、路由名或产品文案，除非它们属于当前 change 的真实内容
 - 每个 requirement 必须包含 Implementation Details
-- Implementation Details 必须覆盖 File Modification Plan、Core Code Landing、Component / Module Split、Impact Surface、Task Breakdown Guidance
-- Component / Module Split 必须以通用维度描述复用、新增/修改、拆分/合并、职责边界、依赖方向和 task slicing，不在通用模板里写业务示例
-- 不承载高层架构决策；架构、API contract、组件策略和关键取舍属于 `design.md`
+- Implementation Details 必须覆盖 Design Linkage / Reconciliation Notes、File Modification Plan、Core Code Landing、Component / Module Split、Impact Surface、Task Breakdown Guidance
+- Design Linkage / Reconciliation Notes 说明该 requirement 对应或约束 `design.md` 中哪一项架构、API 或组件设计
+- 因为 specs 和 design 并行生成，specs subagent 可以先写 expected linkage 并标记 `pending reconciliation`；主 agent 必须在生成 `tasks.md` 前根据最终 `design.md` 解决这些 pending notes
+- File Modification Plan 说明要改哪些文件/模块、为什么改、哪些文件/模块应避免改动
+- Core Code Landing 说明主要函数、服务、状态/数据流、API handler 或集成点
+- Component / Module Split 说明复用、新增/修改、拆分/合并、职责边界、依赖方向和 task slicing
+- Impact Surface 覆盖 API、数据、状态、兼容性、依赖、用户、运维、UI、测试和回归面；不适用的项写 `Not applicable`，不要生成泛泛风险清单
+- Task Breakdown Guidance 说明如何拆成单一职责 tasks，但不直接写 checkbox checklist
+- 不承载 top-level 架构决策；架构、API contract、组件策略和关键取舍属于 `design.md`
 - 不承载 executable checkbox checklist；可执行任务属于 `tasks.md`
 
-如果 Bugfix 后发现行为、场景、文件修改边界、核心代码落点、组件/模块拆分、影响面或任务拆分依据变化，需要回写对应 `specs/<capability>/spec.md`。
+如果 Bugfix 后发现行为、场景、Design Linkage / Reconciliation Notes、文件修改边界、核心代码落点、组件/模块拆分、影响面或任务拆分依据变化，需要回写对应 `specs/<capability>/spec.md`。
 
 ### tasks.md
 
 `tasks.md` 是 apply 阶段唯一进度追踪入口，负责把已对齐的 proposal/design/specs 拆成单一职责的可执行任务。
 
-`tasks.md` 由主 agent 在 specs subagent 和 design subagent 都完成后生成。主 agent 必须先检查两个并行 lane 的输出是否存在范围、行为、接口、组件边界、文件归属或实现方向冲突；存在冲突时必须先回写对齐相关 artifact，再生成任务。
+`tasks.md` 由主 agent 在 specs subagent 和 design subagent 都完成后生成。主 agent 必须先检查两个并行 lane 的输出是否存在范围、行为、接口、组件边界、文件归属、实现方向或 task slicing 冲突；存在冲突时必须先回写对齐相关 artifact，再生成任务。
 
 规则：
 
 - 使用编号分组，例如 `## 1. API Behavior`
-- 每个任务必须是 checkbox：`- [ ] X.Y Task description`
+- 每个任务必须是 checkbox，并固定包含 Source、Owner、Done、Validate 字段：
+  `- [ ] X.Y <task> - Source: <proposal/design/spec reference>; Owner: <file/module/surface>; Done: <completion signal>; Validate: <command/check>`
 - 每个任务应有明确 owner surface、完成信号和验证方式
 - 按依赖顺序排列
-- 每个任务应引用相关 proposal/design/spec 来源，尤其是 spec 中的 requirement、scenario、file modification plan、core code landing、component/module split 或 impact surface
+- 每个任务应引用相关 proposal/design/spec 来源，尤其是 spec 中的 requirement、scenario、Design Linkage / Reconciliation Notes、file modification plan、core code landing、component/module split 或 impact surface
 - 包含必要的测试、回归和验收任务，覆盖用户场景、核心代码回归、组件/模块边界和影响面
 
 如果 Bugfix 后发现任务拆分或执行顺序不合理，需要回写 `tasks.md`。
@@ -148,8 +157,8 @@ flowchart TD
 | Artifact | 回写触发条件 |
 | --- | --- |
 | `proposal.md` | scope 或 acceptance 发生变化 |
-| `design.md` | architecture、API contract、component strategy 或 key technical decision 发生变化 |
-| `specs/<capability>/spec.md` | behavior、scenario、file ownership、core code landing、component/module split、impact surface 或 task breakdown guidance 发生变化 |
+| `design.md` | top-level architecture、API contract、component strategy 或 key technical decision 发生变化 |
+| `specs/<capability>/spec.md` | behavior、scenario、Design Linkage / Reconciliation Notes、file ownership、core code landing、component/module split、impact surface 或 task breakdown guidance 发生变化 |
 | `tasks.md` | task breakdown 或 execution order 被证明错误 |
 
 如果无需回写，需要明确记录 `No additional artifact backwrite required`。
@@ -168,16 +177,35 @@ flowchart TD
 ## Subagent 并行语义
 
 - `schema.yaml` 中的 `||` 表示必须使用 Codex subagent 并行处理，而不只是文档上的逻辑并行。
+- 这是 agent runtime contract，不是 OpenSpec CLI 的强校验能力；CLI 只校验 artifact 结构和依赖图。
 - `specs` 与 `design` 都只依赖 `proposal`，二者不存在 OpenSpec `requires` 层面的相互依赖。
-- `specs` lane 可以并行做代码分析、组件规格、文件修改边界和影响面判断；`design` lane 并行做高层架构、API、组件策略和关键决策。
-- 主 agent 负责 orchestration：分派 subagent、等待结果、检查冲突、完成 design/specs 对齐、生成下游 `tasks.md`。
+- `specs` lane 可以并行做代码分析、组件规格、文件修改边界和影响面判断；`design` lane 并行做 top-level 架构、API 和组件策略。
+- 主 agent 负责 orchestration：分派 subagent、等待结果、检查冲突、解决 `pending reconciliation` notes、完成 design/specs 对齐、生成下游 `tasks.md`。
 - 并行 lane 的写入范围必须互斥：specs subagent 只写 `specs/**/*.md`，design subagent 只写 `design.md`。
 - apply 阶段如果 `tasks.md` 中存在无共享写入冲突的独立任务组，也应按 Codex subagent 规范拆分执行。
 
 ## 工作流要点
 
 - 先用 `proposal.md` 固定需求、场景、边界和验收口径。
-- `specs` 和 `design` 从 proposal 通过 subagent 并行生成，但职责不同：specs 管用户场景、行为 delta 和 capability 级代码落地规格；design 管高层技术方案和关键决策。
+- `design.md` 负责 top-level 技术方案：需求概述、架构设计、API 设计、组件设计。
+- `specs/**/*.md` 是自定义落地型 specs：行为/场景 + 对 `design.md` 的具体实现 + 单一职责 task slicing 指导。
 - `tasks.md` 只在 specs 和 design subagents 都完成且主 agent 完成一致性检查、必要回写和对齐后生成，并作为 apply 的唯一进度来源。
 - `finding.md` 只在 Bugfix 或异常调查时出现，用于记录复现、根因、最小修复、验证和回写决策。
 - Figma/MCP 不属于当前通用 workflow；真正的 UI 还原流程已拆分到同级 schema `../figma-ui-restore/`。
+
+## Archive Policy
+
+`spec-parallel` 默认保留 implementation-oriented landing details，因为这些内容是本 schema 用来约束 AI/code agent 的核心价值。
+
+如果某个项目希望长期归档到 `openspec/specs/` 的内容保持官方 behavior-only 风格，归档前必须显式处理：
+
+- archive-facing requirement 只保留 behavior、scenario、acceptance 和外部约束。
+- file ownership、core code landing、component/module split、task slicing 等实现细节保留在当前 change 的 `design.md`、`finding.md` 或其他项目约定的实现记录中。
+- 不允许在未说明策略的情况下，把 implementation-oriented spec 当作官方 behavior-only spec 使用。
+
+## 校验命令
+
+```bash
+openspec schema which spec-parallel
+openspec schema validate spec-parallel
+```

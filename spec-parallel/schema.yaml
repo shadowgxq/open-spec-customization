@@ -1,6 +1,6 @@
 name: spec-parallel
 version: 1
-description: Custom workflow - proposal -> (landing specs subagent || design subagent) -> reconciliation -> tasks -> apply, with optional post-generation finding archive
+description: Custom workflow - proposal -> (implementation-oriented specs subagent || design subagent) -> reconciliation -> tasks -> apply, with optional post-generation finding archive
 artifacts:
   - id: proposal
     generates: proposal.md
@@ -34,8 +34,8 @@ artifacts:
       that shape the solution. Include data inputs, outputs, states,
       permissions, dependencies, compatibility needs, and interaction rules.
       Avoid line-by-line task details; architecture decisions belong in
-      `design.md`, while behavior-linked implementation details belong in
-      `specs/**/*.md` and executable steps belong in `tasks.md`.
+      `design.md`, implementation-oriented landing details belong in
+      `specs/**/*.md`, and executable steps belong in `tasks.md`.
 
       - **Boundary Conditions**: Explicit in-scope, out-of-scope, assumptions,
       constraints, and acceptance criteria.
@@ -43,10 +43,13 @@ artifacts:
       - **Capabilities**: Identify which specs will be created or modified:
         - **New Capabilities**: List capabilities being introduced. Each becomes
         a new `specs/<name>/spec.md`. Use kebab-case names.
-        - **Modified Capabilities**: List existing capabilities whose
-        REQUIREMENTS are changing. Only include if spec-level behavior changes.
-        Each needs a delta spec file. Check `openspec/specs/` for existing spec
-        names. Leave empty if no requirement changes.
+        - **Modified Capabilities**: List existing capabilities whose behavior
+        requirements or implementation-oriented landing details are changing.
+        Include changes to scenarios, design linkage, file ownership, core code
+        landing, component/module split, impact surface, or task breakdown
+        guidance. Each needs a delta spec file. Check `openspec/specs/` for
+        existing spec names. Leave empty if no behavior or landing detail
+        changes.
 
       - **Impact**: Affected code, APIs, dependencies, systems, users, or
       operational processes.
@@ -62,12 +65,18 @@ artifacts:
     requires: []
   - id: specs
     generates: specs/**/*.md
-    description: OpenSpec landing specifications for behavior, scenarios, implementation details, file ownership, component split, and impact surface
+    description: Custom implementation-oriented landing specifications for behavior, scenarios, concrete implementation detail, component slicing, and impact surface
     template: spec.md
     instruction: >
-      Create landing specification files that define behavior-level
-      requirements, user scenarios, and the concrete implementation details
-      needed to land each capability.
+      Create implementation-oriented landing specification files that define
+      behavior-level requirements, user scenarios, concrete implementation
+      details, and componentized task slicing for each capability.
+
+
+      This is intentionally custom and broader than the default OpenSpec
+      behavior-only spec boundary. In this schema, `specs/**/*.md` are landing
+      specs: they preserve behavior contracts and also constrain how the
+      design is implemented so AI/code agents have less room to drift.
 
 
       Language requirements for this workflow: use Chinese for communication
@@ -79,7 +88,8 @@ artifacts:
 
       This is a parallel planning lane. The orchestrating agent MUST delegate
       this artifact to a dedicated specs subagent and keep its write ownership
-      limited to `specs/**/*.md`.
+      limited to `specs/**/*.md`. This is an agent runtime contract; OpenSpec
+      schema validation only checks artifact structure and dependencies.
 
 
       Create one spec file per capability listed in the proposal's Capabilities
@@ -94,17 +104,17 @@ artifacts:
 
 
       Specs answer WHAT behavior changes, which scenarios prove it, and HOW
-      those behaviors land in the codebase at capability level. Specs do not
+      the corresponding design should land at capability level. Specs do not
       replace `design.md` or `tasks.md`:
 
-      - Put high-level architecture, API contracts, component strategy, and key
-      technical decisions in `design.md`.
+      - Put top-level requirement summary, architecture design, API design, and
+      component design in `design.md`.
 
-      - Put behavior-linked code analysis, file modification plans, core code
-      landing points, component/module split, impact surface, and task
-      breakdown guidance in `specs/**/*.md`.
+      - Put behavior/scenario deltas, design-specific implementation details,
+      file modification plans, core code landing points, component/module
+      split, impact surface, and task breakdown guidance in `specs/**/*.md`.
 
-      - Put executable single-responsibility implementation steps in `tasks.md`.
+      - Put executable single-responsibility checkbox steps in `tasks.md`.
 
       - Because specs and design are generated in parallel from `proposal.md`,
       specs may make implementation recommendations from repository analysis.
@@ -127,25 +137,34 @@ artifacts:
 
       Format requirements:
 
-      - Structure guidance in specs MUST remain generic workflow
-      guidance. Do not embed business-specific logic, domain examples, concrete
-      business entities, field names, API names, route names, or product copy
-      unless they are part of the actual change being specified.
+      - Structure guidance in specs MUST remain generic workflow guidance.
+      Do not embed business-specific logic, domain examples, concrete business
+      entities, field names, API names, route names, or product copy unless
+      they are part of the actual change being specified.
 
-      - Each requirement: `### Requirement: <name>` followed by description
+      - Each requirement: `### Requirement: <name>` followed by description.
 
-      - Use SHALL/MUST for normative requirements
+      - Use SHALL/MUST for normative requirements.
 
-      - Each scenario: `#### Scenario: <name>` with WHEN/THEN format
+      - Each scenario: `#### Scenario: <name>` with WHEN/THEN format.
 
-      - Scenarios MUST use exactly 4 hashtags (`####`)
+      - Scenarios MUST use exactly 4 hashtags (`####`).
 
-      - Every requirement MUST have at least one scenario
+      - Every requirement MUST have at least one scenario.
 
-      - Every requirement MUST include implementation details with:
-        **File Modification Plan**, **Core Code Landing**,
+      - Every requirement MUST include **Implementation Details** with:
+        **Design Linkage / Reconciliation Notes**, **File Modification Plan**,
+        **Core Code Landing**,
         **Component / Module Split**, **Impact Surface**, and
         **Task Breakdown Guidance**.
+
+      - Design Linkage / Reconciliation Notes MUST identify which `design.md`
+      architecture, API, or component decision this requirement implements or
+      constrains. Because specs and design are generated in parallel, the
+      specs subagent MAY write an expected linkage and mark it
+      `pending reconciliation`. The orchestrating agent MUST resolve pending
+      reconciliation notes against the final `design.md` before writing
+      `tasks.md`.
 
       - File Modification Plan MUST identify the files/modules to change, why
       they are touched, and any files/modules that should be avoided.
@@ -163,10 +182,12 @@ artifacts:
 
       - Impact Surface MUST cover affected APIs, data, state, compatibility,
       dependencies, users, operations, UI, tests, and regression areas where
-      applicable.
+      applicable. For non-applicable surfaces, write `Not applicable`; do not
+      generate generic risk lists.
 
       - Task Breakdown Guidance MUST explain how to split the requirement into
-      single-responsibility tasks without becoming an executable checklist.
+      single-responsibility tasks without becoming an executable checkbox
+      checklist.
 
 
       MODIFIED requirements workflow:
@@ -183,22 +204,23 @@ artifacts:
       name exactly, whitespace-insensitive
 
 
-      If behavior, scenario expectations, file ownership, core implementation
-      landing, component/module split, impact surface, or task breakdown
-      guidance changes during bugfix or validation, backwrite the affected spec.
+      If behavior, scenario expectations, design linkage or reconciliation
+      notes, file ownership, core implementation landing, component/module
+      split, impact surface, or task breakdown guidance changes during bugfix
+      or validation, backwrite the affected spec.
 
 
-      The specs subagent MUST NOT write `design.md`, `tasks.md`, architecture
-      decisions, or executable task checklists.
+      The specs subagent MUST NOT write `design.md`, `tasks.md`, top-level
+      architecture decisions, or executable task checklists.
     requires:
       - proposal
   - id: design
     generates: design.md
-    description: Technical design document defining architecture, APIs, components, and implementation decisions
+    description: Technical design document defining requirement overview, architecture, APIs, and component strategy
     template: design.md
     instruction: >
-      Create the design document that explains HOW to implement the proposal
-      and satisfy the specs.
+      Create the design document that explains the top-level technical approach
+      for implementing the proposal and satisfying the specs.
 
 
       Language requirements for this workflow: use Chinese for communication
@@ -210,14 +232,17 @@ artifacts:
 
       This is a parallel planning lane. The orchestrating agent MUST delegate
       this artifact to a dedicated design subagent and keep its write ownership
-      limited to `design.md`.
+      limited to `design.md`. This is an agent runtime contract; OpenSpec
+      schema validation only checks artifact structure and dependencies.
 
 
-      `design.md` is required in this workflow. For small changes, keep it
-      concise and explicitly state when a section is not applicable.
+      `design.md` is required in this workflow. It owns top-level design
+      decisions. Capability-level landing detail and task slicing are recorded
+      in `specs/**/*.md`; executable checklist items are recorded in
+      `tasks.md`.
 
 
-      Sections:
+      Required sections:
 
       - **Requirement Overview**: Restate the relevant proposal goal and link it
       to the affected capabilities.
@@ -233,6 +258,9 @@ artifacts:
       - **Component Design**: Components, modules, services, responsibilities,
       interfaces, ownership boundaries, and state transitions.
 
+
+      Optional sections when useful:
+
       - **Decisions / Trade-offs**: Key technical choices with rationale and
       alternatives considered.
 
@@ -243,13 +271,14 @@ artifacts:
       "None".
 
 
-      Focus on implementation strategy and technical decisions, not line-by-line
-      coding tasks. If implementation path or technical decisions change during
-      bugfix or validation, backwrite this file.
+      Focus on top-level implementation strategy and technical decisions, not
+      per-requirement code landing or executable task checklists. If top-level
+      architecture, API contracts, component strategy, or key technical
+      decisions change during bugfix or validation, backwrite this file.
 
 
-      The design subagent MUST NOT write `specs/**/*.md`, `tasks.md`, or
-      executable task checklists.
+      The design subagent MUST NOT write `specs/**/*.md`, `tasks.md`, source
+      files, tests, or executable task checklists.
     requires:
       - proposal
   - id: tasks
@@ -257,8 +286,9 @@ artifacts:
     description: Single-responsibility implementation checklist tracked by the apply phase
     template: tasks.md
     instruction: >
-      Create the task list that breaks down the reconciled design and landing
-      specs into executable, single-responsibility work items.
+      Create the task list that breaks down the reconciled design and
+      implementation-oriented landing specs into executable,
+      single-responsibility work items.
 
 
       Language requirements for this workflow: use Chinese for communication
@@ -276,33 +306,36 @@ artifacts:
       The orchestrating agent MUST wait for both the specs subagent and design
       subagent to finish, then reconcile their outputs before creating
       `tasks.md`. If specs and design conflict on architecture, API contracts,
-      component boundaries, file ownership, or implementation direction, the
-      orchestrating agent MUST update the affected artifact before writing
-      tasks.
+      component boundaries, file ownership, implementation direction, or task
+      slicing, the orchestrating agent MUST update the affected artifact before
+      writing tasks. Any `pending reconciliation` note in specs MUST be
+      resolved before `tasks.md` is written.
 
 
       Guidelines:
 
-      - Group related tasks under numbered `##` headings
+      - Group related tasks under numbered `##` headings.
 
-      - Each task MUST be a checkbox: `- [ ] X.Y Task description`
+      - Each task MUST be a checkbox using this exact field shape:
+      `- [ ] X.Y <task> - Source: <proposal/design/spec reference>; Owner: <file/module/surface>; Done: <completion signal>; Validate: <command/check>`.
 
       - Each task should have one clear owner surface, one completion signal,
       one validation method, and be small enough to complete in one focused
-      session
+      session.
 
-      - Reference the relevant proposal/design/spec source when the task depends
-      on a requirement, scenario, technical decision, file modification plan,
-      core code landing point, component/module split, or impact surface
+      - Reference the relevant proposal/design/spec source when the task
+      depends on a requirement, scenario, design decision, file modification
+      plan, core code landing point, component/module split, impact surface, or
+      task breakdown guidance.
 
-      - Order tasks by dependency
+      - Order tasks by dependency.
 
       - Include validation tasks for focused tests, regression checks, and
-      acceptance scenarios
+      acceptance scenarios.
 
       - Validation tasks MUST cover behavior scenarios, core code regression,
       component/module boundaries, and the impact surfaces identified in specs
-      where applicable
+      where applicable.
 
 
       Example:
@@ -310,12 +343,12 @@ artifacts:
       ```
       ## 1. Data Model
 
-      - [ ] 1.1 Add the persisted field from the spec file modification plan
+      - [ ] 1.1 Add the persisted field from the spec file modification plan - Source: specs/<capability>/spec.md Requirement <name>; Owner: <model/file>; Done: field persisted and read path updated; Validate: <focused test/check>
 
       ## 2. API Behavior
 
-      - [ ] 2.1 Implement request validation from the spec core code landing
-      - [ ] 2.2 Add error-path tests for the boundary conditions in proposal.md
+      - [ ] 2.1 Implement request validation from the spec core code landing - Source: specs/<capability>/spec.md Core Code Landing; Owner: <handler/service>; Done: invalid requests return expected error; Validate: <focused test/check>
+      - [ ] 2.2 Add error-path tests for the boundary conditions in proposal.md - Source: proposal.md Boundary Conditions; Owner: <test file>; Done: failure path covered; Validate: <test command>
       ```
 
 
@@ -363,12 +396,12 @@ artifacts:
 
       - If scope or acceptance changed, update `proposal.md`
 
-      - If architecture, API contracts, component strategy, or key technical
-      decisions changed, update `design.md`
+      - If top-level architecture, API contracts, component strategy, or key
+      technical decisions changed, update `design.md`
 
-      - If behavior, scenario, file ownership, core code landing,
-      component/module split, impact surface, or task breakdown guidance
-      changed, update `specs/<capability>/spec.md`
+      - If behavior, scenario, design linkage or reconciliation notes, file
+      ownership, core code landing, component/module split, impact surface, or
+      task breakdown guidance changed, update `specs/<capability>/spec.md`
 
       - If task breakdown or execution order proved wrong, update `tasks.md`
 
@@ -391,4 +424,5 @@ apply:
     Subagents must not revert user changes or changes made by other subagents.
     If a bug, regression, incorrect behavior, or abnormal implementation result is discovered during apply or validation, create or update finding.md to record reproduction, root cause, minimal fix, validation, and the artifact backwrite matrix.
     After a bugfix, use finding.md to decide whether proposal.md, design.md, specs/, or tasks.md must be updated before archive.
+    Before archive, review implementation-oriented details in specs/**/*.md. By default this schema intentionally keeps landing details in change artifacts; if the long-term openspec/specs archive should be behavior-only for a project, reduce archive-facing requirements to behavior/scenario content and preserve implementation decisions in design.md or finding.md instead.
     Pause if you hit blockers or need clarification.

@@ -1,9 +1,9 @@
 ## 1. <!-- Task Group Name -->
 
-- [ ] 1.1 <!-- Single-responsibility task from specs/<capability>/spec.md; include owner surface, completion signal, and validation method -->
-- [ ] 1.2 <!-- Single-responsibility task that references the relevant requirement/scenario, file modification plan, core code landing point, or component/module split -->
+- [ ] 1.1 <!-- <task> - Source: <proposal/design/spec reference>; Owner: <file/module/surface>; Done: <completion signal>; Validate: <command/check> -->
+- [ ] 1.2 <!-- <task> - Source: <requirement/scenario/design linkage/file plan/core landing/component split>; Owner: <file/module/surface>; Done: <completion signal>; Validate: <command/check> -->
 
 ## 2. Validation
 
-- [ ] 2.1 <!-- Focused test or check for a requirement/scenario from specs/<capability>/spec.md -->
-- [ ] 2.2 <!-- Regression check for core code landing, component/module boundaries, or impact surface -->
+- [ ] 2.1 <!-- <focused test/check> - Source: <requirement/scenario from specs/<capability>/spec.md>; Owner: <test/check surface>; Done: <coverage signal>; Validate: <command/check> -->
+- [ ] 2.2 <!-- <regression check> - Source: <core landing/component boundary/impact surface/design linkage>; Owner: <test/check surface>; Done: <regression signal>; Validate: <command/check> -->

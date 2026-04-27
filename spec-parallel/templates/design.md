@@ -16,12 +16,12 @@
 
 ## Decisions / Trade-offs
 
-<!-- Key technical choices, rationale, and alternatives considered. -->
+<!-- Optional: key technical choices, rationale, and alternatives considered. Remove if not needed. -->
 
 ## Risks and Mitigations
 
-<!-- Known risks, rollout concerns, migration needs, rollback or recovery strategy. -->
+<!-- Optional: known risks, rollout concerns, migration needs, rollback or recovery strategy. Remove if not needed. -->
 
 ## Open Questions
 
-<!-- Outstanding decisions or unknowns. Write "None" if resolved. -->
+<!-- Optional: outstanding decisions or unknowns. Write "None" if resolved. Remove if not needed. -->

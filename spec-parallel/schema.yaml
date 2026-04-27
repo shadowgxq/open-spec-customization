@@ -10,6 +10,13 @@ artifacts:
       Create the proposal document that defines the product need and scope.
 
 
+      Language requirements for this workflow: use Chinese for communication
+      and explanation by default. Keep technical terms, identifiers, commands,
+      paths, filenames, environment variables, config keys, error messages,
+      logs, and URLs unchanged. If clarification is helpful, explain in
+      Chinese while preserving the original term.
+
+
       Sections:
 
       - **Requirement Overview**: Concise summary of the problem, goal, and why
@@ -63,6 +70,13 @@ artifacts:
       needed to land each capability.
 
 
+      Language requirements for this workflow: use Chinese for communication
+      and explanation by default. Keep technical terms, identifiers, commands,
+      paths, filenames, environment variables, config keys, error messages,
+      logs, and URLs unchanged. If clarification is helpful, explain in
+      Chinese while preserving the original term.
+
+
       This is a parallel planning lane. The orchestrating agent MUST delegate
       this artifact to a dedicated specs subagent and keep its write ownership
       limited to `specs/**/*.md`.
@@ -113,6 +127,11 @@ artifacts:
 
       Format requirements:
 
+      - Structure guidance in specs MUST remain generic workflow
+      guidance. Do not embed business-specific logic, domain examples, concrete
+      business entities, field names, API names, route names, or product copy
+      unless they are part of the actual change being specified.
+
       - Each requirement: `### Requirement: <name>` followed by description
 
       - Use SHALL/MUST for normative requirements
@@ -136,7 +155,11 @@ artifacts:
       be implemented.
 
       - Component / Module Split MUST identify reused, new, modified, split, or
-      merged components/modules and their ownership boundaries.
+      merged components/modules and their ownership boundaries. This section
+      MUST stay generic in its template and generation rules: define reuse,
+      new/modified surfaces, split/merge decisions, ownership boundaries,
+      dependency direction, and task slicing without introducing business
+      logic that is not present in the change.
 
       - Impact Surface MUST cover affected APIs, data, state, compatibility,
       dependencies, users, operations, UI, tests, and regression areas where
@@ -176,6 +199,13 @@ artifacts:
     instruction: >
       Create the design document that explains HOW to implement the proposal
       and satisfy the specs.
+
+
+      Language requirements for this workflow: use Chinese for communication
+      and explanation by default. Keep technical terms, identifiers, commands,
+      paths, filenames, environment variables, config keys, error messages,
+      logs, and URLs unchanged. If clarification is helpful, explain in
+      Chinese while preserving the original term.
 
 
       This is a parallel planning lane. The orchestrating agent MUST delegate
@@ -229,6 +259,13 @@ artifacts:
     instruction: >
       Create the task list that breaks down the reconciled design and landing
       specs into executable, single-responsibility work items.
+
+
+      Language requirements for this workflow: use Chinese for communication
+      and explanation by default. Keep technical terms, identifiers, commands,
+      paths, filenames, environment variables, config keys, error messages,
+      logs, and URLs unchanged. If clarification is helpful, explain in
+      Chinese while preserving the original term.
 
 
       IMPORTANT: Follow the checkbox format exactly. The apply phase parses
@@ -297,6 +334,13 @@ artifacts:
       artifacts have been generated.
 
 
+      Language requirements for this workflow: use Chinese for communication
+      and explanation by default. Keep technical terms, identifiers, commands,
+      paths, filenames, environment variables, config keys, error messages,
+      logs, and URLs unchanged. If clarification is helpful, explain in
+      Chinese while preserving the original term.
+
+
       This artifact is the bugfix record and document-backwrite guide. It is
       not required for ordinary feature planning. If no bugfix investigation is
       needed, leave this artifact absent.
@@ -337,6 +381,7 @@ apply:
     - tasks
   tracks: tasks.md
   instruction: |
+    Use Chinese for communication and explanation by default. Keep technical terms, identifiers, commands, paths, filenames, environment variables, config keys, error messages, logs, and URLs unchanged. If clarification is helpful, explain in Chinese while preserving the original term.
     Read proposal.md, design.md, specs/**/*.md, and tasks.md before changing code.
     If finding.md exists, read it before changing code.
     Work through pending tasks in dependency order and mark completed tasks as you go.

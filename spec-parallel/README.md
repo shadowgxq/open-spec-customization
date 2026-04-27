@@ -53,6 +53,12 @@ flowchart TD
     I --> E
 ```
 
+## 全局语言规范
+
+- 整个 `spec-parallel` workflow 的沟通、解释和 artifact 正文默认使用中文。
+- technical terms、identifiers、commands、paths、filenames、environment variables、config keys、error messages、logs 和 URLs 保持原文。
+- 如需澄清，用中文解释，同时保留原始 term。
+
 ## 产物职责
 
 ### proposal.md
@@ -101,8 +107,10 @@ flowchart TD
 - 每个 requirement 使用 `### Requirement:`
 - 每个 scenario 使用 `#### Scenario:`
 - 使用 SHALL/MUST 描述规范行为
+- spec 模板和生成规则必须保持通用，不携带业务逻辑、领域示例、具体业务实体、字段名、API 名、路由名或产品文案，除非它们属于当前 change 的真实内容
 - 每个 requirement 必须包含 Implementation Details
 - Implementation Details 必须覆盖 File Modification Plan、Core Code Landing、Component / Module Split、Impact Surface、Task Breakdown Guidance
+- Component / Module Split 必须以通用维度描述复用、新增/修改、拆分/合并、职责边界、依赖方向和 task slicing，不在通用模板里写业务示例
 - 不承载高层架构决策；架构、API contract、组件策略和关键取舍属于 `design.md`
 - 不承载 executable checkbox checklist；可执行任务属于 `tasks.md`
 

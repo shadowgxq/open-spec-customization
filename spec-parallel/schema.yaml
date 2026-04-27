@@ -1,0 +1,430 @@
+name: spec-parallel
+version: 1
+description: Custom workflow - proposal → (specs || design || figma-mcp) → figma-snapshot → tasks, with optional post-generation finding archive
+artifacts:
+  - id: proposal
+    generates: proposal.md
+    description: Initial proposal document outlining the change
+    template: proposal.md
+    instruction: >
+      Create the proposal document that establishes WHY this change is needed.
+
+
+      Sections:
+
+      - **Why**: 1-2 sentences on the problem or opportunity. What problem does
+      this solve? Why now?
+
+      - **What Changes**: Bullet list of changes. Be specific about new
+      capabilities, modifications, or removals. Mark breaking changes with
+      **BREAKING**.
+
+      - **Capabilities**: Identify which specs will be created or modified:
+        - **New Capabilities**: List capabilities being introduced. Each becomes a new `specs/<name>/spec.md`. Use kebab-case names (e.g., `user-auth`, `data-export`).
+        - **Modified Capabilities**: List existing capabilities whose REQUIREMENTS are changing. Only include if spec-level behavior changes (not just implementation details). Each needs a delta spec file. Check `openspec/specs/` for existing spec names. Leave empty if no requirement changes.
+      - **Impact**: Affected code, APIs, dependencies, or systems.
+
+
+      IMPORTANT: The Capabilities section is critical. It creates the contract
+      between
+
+      proposal and specs phases. Research existing specs before filling this in.
+
+      Each capability listed here will need a corresponding spec file.
+
+
+      Keep it concise (1-2 pages). Focus on the "why" not the "how" -
+
+      implementation details belong in design.md.
+
+
+      This is the foundation - specs, design, and tasks all build on this.
+    requires: []
+  - id: specs
+    generates: specs/**/*.md
+    description: Detailed specifications for the change
+    template: spec.md
+    instruction: >
+      Create specification files that define WHAT the system should do.
+
+
+      Create one spec file per capability listed in the proposal's Capabilities
+      section.
+
+      - New capabilities: use the exact kebab-case name from the proposal
+      (specs/<capability>/spec.md).
+
+      - Modified capabilities: use the existing spec folder name from
+      openspec/specs/<capability>/ when creating the delta spec at
+      specs/<capability>/spec.md.
+
+
+      Delta operations (use ## headers):
+
+      - **ADDED Requirements**: New capabilities
+
+      - **MODIFIED Requirements**: Changed behavior - MUST include full updated
+      content
+
+      - **REMOVED Requirements**: Deprecated features - MUST include **Reason**
+      and **Migration**
+
+      - **RENAMED Requirements**: Name changes only - use FROM:/TO: format
+
+
+      Format requirements:
+
+      - Each requirement: `### Requirement: <name>` followed by description
+
+      - Use SHALL/MUST for normative requirements (avoid should/may)
+
+      - Each scenario: `#### Scenario: <name>` with WHEN/THEN format
+
+      - **CRITICAL**: Scenarios MUST use exactly 4 hashtags (`####`). Using 3
+      hashtags or bullets will fail silently.
+
+      - Every requirement MUST have at least one scenario.
+
+
+      MODIFIED requirements workflow:
+
+      1. Locate the existing requirement in openspec/specs/<capability>/spec.md
+
+      2. Copy the ENTIRE requirement block (from `### Requirement:` through all
+      scenarios)
+
+      3. Paste under `## MODIFIED Requirements` and edit to reflect new behavior
+
+      4. Ensure header text matches exactly (whitespace-insensitive)
+
+
+      Common pitfall: Using MODIFIED with partial content loses detail at
+      archive time.
+
+      If adding new concerns without changing existing behavior, use ADDED
+      instead.
+
+
+      Example:
+
+      ```
+
+      ## ADDED Requirements
+
+
+      ### Requirement: User can export data
+
+      The system SHALL allow users to export their data in CSV format.
+
+
+      #### Scenario: Successful export
+
+      - **WHEN** user clicks "Export" button
+
+      - **THEN** system downloads a CSV file with all user data
+
+
+      ## REMOVED Requirements
+
+
+      ### Requirement: Legacy export
+
+      **Reason**: Replaced by new export system
+
+      **Migration**: Use new export endpoint at /api/v2/export
+
+      ```
+
+
+      Specs should be testable - each scenario is a potential test case.
+    requires:
+      - proposal
+  - id: design
+    generates: design.md
+    description: Technical design document with implementation details
+    template: design.md
+    instruction: >
+      Create the design document that explains HOW to implement the change.
+
+
+      When to include design.md (create only if any apply):
+
+      - Cross-cutting change (multiple services/modules) or new architectural
+      pattern
+
+      - New external dependency or significant data model changes
+
+      - Security, performance, or migration complexity
+
+      - Ambiguity that benefits from technical decisions before coding
+
+
+      Sections:
+
+      - **Context**: Background, current state, constraints, stakeholders
+
+      - **Goals / Non-Goals**: What this design achieves and explicitly excludes
+
+      - **Decisions**: Key technical choices with rationale (why X over Y?).
+      Include alternatives considered for each decision.
+
+      - **Risks / Trade-offs**: Known limitations, things that could go wrong.
+      Format: [Risk] → Mitigation
+
+      - **Migration Plan**: Steps to deploy, rollback strategy (if applicable)
+
+      - **Open Questions**: Outstanding decisions or unknowns to resolve
+
+
+      Focus on architecture and approach, not line-by-line implementation.
+
+      Reference the proposal for motivation and specs for requirements.
+
+
+      Good design docs explain the "why" behind technical decisions.
+    requires:
+      - proposal
+  - id: figma-mcp
+    generates: figma-mcp.md
+    description: Figma MCP planning contract for design extraction and refresh policy
+    template: figma-mcp.md
+    instruction: >
+      Create the Figma MCP planning artifact for the design lane. This artifact
+      defines the design source, the snapshot contract, and the conditions for
+      any future refresh.
+
+
+      This artifact MUST define:
+
+      - MCP setup assumptions and required Figma permissions
+
+      - The Figma source of truth: file keys, node ids, page/component scope,
+      and ownership
+
+      - A step-by-step workflow for extracting design context from Figma during
+      planning
+
+      - Snapshot contract details for the next artifact:
+        - output path: `figma/snapshot.json`
+        - expected payload shape
+        - completion signal
+        - who captures it
+        - when it must be refreshed
+
+      - Skill creation plan (skill name, responsibility, inputs/outputs)
+
+      - Subagent handoff contract: what each subagent returns and output paths
+
+      - Aggregation strategy: how snapshot-backed design context is reused by
+      tasks and apply
+
+      - Example fixture policy: `examples/figma-mcp-format/` may be read
+      only as a non-authoritative reference for the approximate field shape of
+      Figma MCP cache and handoff data. Do not copy placeholder values, example
+      labels, or example paths into generated artifacts. The source of truth for
+      implementation remains the change-specific `figma/snapshot.json`.
+
+      Planning lane requirements:
+
+      - Define exactly 3 planning lanes for this phase:
+        1. Specs lane
+        2. Design lane
+        3. Figma MCP lane
+
+      - Ensure each lane has independent ownership and non-overlapping planning
+      outputs
+
+      - Explicitly state the completion signal each lane must emit before
+      `tasks` can be generated
+
+
+      Subagent orchestration requirements:
+
+      - Auto-start multiple subagents only for planning responsibilities
+
+      - Assign each subagent a bounded scope and explicit artifact output
+
+      - Return a final artifact index for planning that lists:
+        - subagent id / role
+        - generated artifacts
+        - status (done/blocked)
+        - blocker notes if any
+    requires:
+      - proposal
+  - id: figma-snapshot
+    generates: figma/snapshot.json
+    description: Raw Figma MCP snapshot captured for downstream implementation
+    template: figma-snapshot.json
+    instruction: >
+      Create the Figma snapshot artifact by executing the capture plan defined
+      in `figma-mcp.md` and saving the raw MCP response to
+      `figma/snapshot.json`.
+
+
+      For approximate field-shape reference, you may inspect
+      `examples/figma-mcp-format/`. Treat it as a sanitized example
+      fixture only, not as real project data and not as a required workflow
+      artifact.
+
+
+      This artifact MUST:
+
+      - Use the file keys, node ids, and scope defined in `figma-mcp.md`
+
+      - Save the original MCP response in a single JSON file
+
+      - Include capture metadata such as `capturedAt`, `source`, `fileKey`,
+      `nodeIds`, and `mcpTool`
+
+      - Keep the response unnormalized in `payload`
+
+      - Be the only completion signal for the design snapshot stage
+
+
+      Do not generate `tasks.md` from live MCP data. `tasks.md` should depend
+      on this saved snapshot so every later agent reads the same design context.
+
+
+      If capture fails, record a blocked status in `figma-mcp.md` and do not
+      create a partial snapshot file.
+    requires:
+      - figma-mcp
+  - id: tasks
+    generates: tasks.md
+    description: Implementation checklist with trackable tasks
+    template: tasks.md
+    instruction: >
+      Create the task list that breaks down the implementation work.
+
+
+      **IMPORTANT: Follow the template below exactly.** The apply phase parses
+
+      checkbox format to track progress. Tasks not using `- [ ]` won't be
+      tracked.
+
+
+      Guidelines:
+
+      - Group related tasks under ## numbered headings
+
+      - Each task MUST be a checkbox: `- [ ] X.Y Task description`
+
+      - Tasks should be small enough to complete in one session
+
+      - Any frontend or design-sensitive task MUST explicitly reference
+      `figma/snapshot.json` as its primary design input
+
+      - If a task may require re-reading live Figma data, make that refresh an
+      explicit task instead of leaving it implicit to apply
+
+      - Order tasks by dependency (what must be done first?)
+
+
+      Example:
+
+      ```
+
+      ## 1. Setup
+
+
+      - [ ] 1.1 Create new module structure
+
+      - [ ] 1.2 Add dependencies to package.json
+
+
+      ## 2. Core Implementation
+
+
+      - [ ] 2.1 Implement data export function
+
+      - [ ] 2.2 Add CSV formatting utilities
+
+      ```
+
+
+      Reference specs for what needs to be built, design for how to build it,
+      and `figma/snapshot.json` for the captured design source. Use
+      `figma-mcp.md` only for capture policy and refresh rules.
+
+      Each task should be verifiable - you know when it's done.
+    requires:
+      - specs
+      - design
+      - figma-snapshot
+  - id: finding
+    generates: finding.md
+    description: Optional post-generation bugfix finding archive for reproduction, root cause, minimal fix strategy, validation, and artifact backwrite decisions
+    template: finding.md
+    instruction: >
+      Create or update `finding.md` only when a bug, regression, incorrect
+      behavior, or abnormal implementation result is discovered after OpenSpec
+      artifacts have been generated.
+
+
+      This artifact is a repair and archive record, not a required planning
+      artifact for ordinary feature work. If no bugfix investigation is needed,
+      leave this artifact absent.
+
+
+      Required workflow when used:
+
+      1. Reproduce the issue or record why direct reproduction is unavailable
+
+      2. Bound the affected surface
+
+      3. Identify the most defensible root cause
+
+      4. Define the smallest correct fix
+
+      5. Validate the fix and decide which artifacts must be backwritten
+
+
+      This artifact MUST include:
+
+      - Problem summary
+
+      - Reproduction steps and observed evidence
+
+      - Root cause
+
+      - Minimal fix strategy
+
+      - Validation plan
+
+      - Documentation backwrite matrix
+
+      - Archive notes
+
+
+      Documentation backwrite rules:
+
+      - If scope or acceptance changed, update `proposal.md`
+
+      - If implementation path or technical decision changed, update `design.md`
+
+      - If behavior or scenario changed, update `specs/<capability>/spec.md`
+
+      - If task breakdown or execution order proved wrong, update `tasks.md`
+
+      - If none of the above changed, explicitly record "No additional artifact
+      backwrite required"
+    requires:
+      - tasks
+apply:
+  requires:
+    - tasks
+  tracks: tasks.md
+  instruction: |
+    Read context files, work through pending tasks, mark complete as you go.
+    If tasks involve frontend or design implementation, read figma/snapshot.json
+    before making implementation decisions.
+    Default to the saved snapshot instead of re-requesting live Figma MCP data.
+    Only refresh the snapshot when a task explicitly requires it or when the
+    snapshot is missing, stale, or insufficient for implementation.
+    If finding.md exists, read it before changing code. If a bug, regression,
+    incorrect behavior, or abnormal implementation result is discovered during
+    apply or validation, create or update finding.md to record reproduction,
+    root cause, minimal fix, validation, and the artifact backwrite matrix.
+    After a bugfix, use finding.md to decide whether proposal.md, design.md,
+    specs/, or tasks.md must be updated before archive.
+    Pause if you hit blockers or need clarification.

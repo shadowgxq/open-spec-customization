@@ -1,11 +1,11 @@
 ## ADDED Requirements
 
 ### Requirement: <!-- requirement name -->
-<!-- Normative behavior. Use SHALL/MUST. Reference design.md only when needed to make the behavior testable or unambiguous. -->
+<!-- Normative behavior. Use SHALL/MUST. Do not encode pixel layout here unless it is behaviorally required. -->
 
 #### Scenario: <!-- scenario name -->
-- **WHEN** <!-- condition or trigger -->
-- **THEN** <!-- expected observable outcome -->
+- **WHEN** <!-- condition, user action, data state, or viewport state -->
+- **THEN** <!-- expected observable behavior -->
 
 ## MODIFIED Requirements
 

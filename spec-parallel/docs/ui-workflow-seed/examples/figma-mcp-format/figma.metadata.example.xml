@@ -1,0 +1,4 @@
+<frame id="<node-id>" name="<screen-name>" x="0" y="0" width="375" height="812">
+  <text id="<text-node-id>" name="<label-name>" x="24" y="88" width="327" height="24" />
+  <instance id="<component-node-id>" name="<component-name>" x="24" y="128" width="327" height="48" />
+</frame>

@@ -1,19 +1,27 @@
-## Context
+## Requirement Overview
 
-<!-- Background and current state -->
+<!-- Restate the relevant proposal goal and affected capabilities. -->
 
-## Goals / Non-Goals
+## Architecture Design
 
-**Goals:**
-<!-- What this design aims to achieve -->
+<!-- Current state, target architecture, data flow, module boundaries, dependencies, storage, permissions, error handling, and compatibility constraints. -->
 
-**Non-Goals:**
-<!-- What is explicitly out of scope -->
+## API Design
 
-## Decisions
+<!-- Public/internal APIs, request/response shapes, events, data contracts, validation rules, error codes, compatibility. Write "Not applicable" if none. -->
 
-<!-- Key design decisions and rationale -->
+## Component Design
 
-## Risks / Trade-offs
+<!-- Components/modules/services, responsibilities, interfaces, ownership boundaries, and state transitions. -->
 
-<!-- Known risks and trade-offs -->
+## Decisions / Trade-offs
+
+<!-- Key technical choices, rationale, and alternatives considered. -->
+
+## Risks and Mitigations
+
+<!-- Known risks, rollout concerns, migration needs, rollback or recovery strategy. -->
+
+## Open Questions
+
+<!-- Outstanding decisions or unknowns. Write "None" if resolved. -->

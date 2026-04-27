@@ -23,8 +23,8 @@
 | Artifact | Update Needed | Trigger | Status | Notes |
 |----------|---------------|---------|--------|-------|
 | proposal.md | yes/no | scope or acceptance changed | pending | <!-- notes --> |
-| design.md | yes/no | implementation path or decision changed | pending | <!-- notes --> |
-| specs/ | yes/no | behavior or scenario changed | pending | <!-- notes --> |
+| design.md | yes/no | architecture, API contract, component strategy, or key technical decision changed | pending | <!-- notes --> |
+| specs/ | yes/no | behavior, scenario, file ownership, core code landing, component/module split, impact surface, or task breakdown guidance changed | pending | <!-- notes --> |
 | tasks.md | yes/no | task breakdown/order was wrong | pending | <!-- notes --> |
 
 ## Archive Notes

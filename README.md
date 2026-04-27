@@ -6,12 +6,12 @@
 
 | Schema | 定位 | 适用场景 | 入口文档 |
 | --- | --- | --- | --- |
-| `spec-parallel` | 通用需求交付 workflow | 普通功能、后端/API、非强 UI 还原任务 | `spec-parallel/README.md` |
+| `spec-parallel` | 通用需求交付 workflow，包含并行 design 与落地型 specs | 普通功能、后端/API、非强 UI 还原任务 | `spec-parallel/README.md` |
 | `figma-ui-restore` | Figma 驱动的 UI 高保真还原 workflow | 从 Figma/MCP 数据还原前端页面，并强制视觉验收 | `figma-ui-restore/README.md` |
 
 ## 选择规则
 
-- 使用 `spec-parallel`：当任务重点是需求拆解、技术方案、行为 spec、实现 tasks 和 bugfix 回写。
+- 使用 `spec-parallel`：当任务重点是需求拆解、技术方案、用户场景 spec、代码落地规格、实现 tasks 和 bugfix 回写。
 - 使用 `figma-ui-restore`：当任务重点是根据 Figma 设计稿还原 UI，并需要 `figma/snapshot.json`、`ui-contract.md`、`implementation-map.md`、`visual-qa.md` 形成强约束链路。
 
 ## 文档组织策略

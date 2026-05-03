@@ -1,0 +1,449 @@
+name: frontend-business-spec
+version: 1
+description: Frontend business workflow with business specs, Figma skill intake, repo analysis, technical design, executable tasks, verification, and post-user-validation findings guidance.
+
+artifacts:
+  - id: proposal
+    generates: proposal.md
+    description: PRD-style source of truth for scope, user scenarios, acceptance, and optional Figma input.
+    template: proposal.md
+    instruction: >
+      Create `proposal.md` as the business and acceptance source of truth for
+      this frontend change.
+
+
+      Use Chinese for communication and explanation by default. Keep technical
+      terms, identifiers, commands, paths, filenames, environment variables,
+      config keys, error messages, logs, and URLs unchanged.
+
+
+      The proposal MUST answer why this change is needed, what user-visible
+      behavior or UI surface changes, what is in or out of scope, what counts as
+      accepted, whether Figma input exists, whether visual restoration is a hard
+      gate, and whether Figma is a strong, weak, or not-applicable dependency.
+
+
+      Required sections:
+
+      - Requirement Overview
+
+      - Core Functional Description
+
+      - User Scenarios
+
+      - Scope and Non-Scope
+
+      - Acceptance Criteria
+
+      - Figma Input
+
+      - Capabilities
+
+      - Impact
+
+
+      Capabilities listed here create the contract for `specs/<capability>/spec.md`.
+      Use kebab-case capability names. If scope, acceptance, target surface,
+      Figma dependency, Figma hard-gate status, or PRD constraints change during
+      validation or post-apply bugfix, backwrite this file.
+    requires: []
+
+  - id: specs
+    generates: specs/**/*.md
+    description: Business behavior and scenario specifications. No implementation details.
+    template: spec.md
+    instruction: >
+      Create `specs/**/*.md` files for the business behavior and scenario
+      expectations associated with the proposal.
+
+
+      Use Chinese for communication and explanation by default. Keep technical
+      terms, identifiers, commands, paths, filenames, environment variables,
+      config keys, error messages, logs, and URLs unchanged.
+
+
+      This is a behavior-only artifact. It MUST describe business behavior,
+      user scenarios, error scenarios, boundary conditions, and acceptance
+      results. It MUST NOT include component splits, file paths, Figma node IDs,
+      CSS tokens, API implementation details, concrete code landing points, or
+      executable tasks.
+
+
+      This artifact can be generated in parallel with `figma-intake` and
+      `repo-analysis` after `proposal.md` exists. If the agent runtime supports
+      delegation, keep the specs writer ownership limited to `specs/**/*.md`.
+
+
+      Create one spec file per capability listed in the proposal's Capabilities
+      section:
+
+      - New capabilities: `specs/<capability>/spec.md`
+
+      - Modified capabilities: use the existing capability folder name from
+      `openspec/specs/<capability>/`
+
+
+      Use OpenSpec delta headers:
+
+      - `## ADDED Requirements`
+
+      - `## MODIFIED Requirements`
+
+      - `## REMOVED Requirements`
+
+      - `## RENAMED Requirements`
+
+
+      Each requirement MUST use `### Requirement: <name>`. Each scenario MUST
+      use `#### Scenario: <name>` with WHEN/THEN format. Every requirement MUST
+      have at least one scenario.
+
+
+      If behavior, scenario expectations, boundary conditions, or acceptance
+      results change during validation or post-apply bugfix, backwrite the
+      affected spec file.
+    requires:
+      - proposal
+
+  - id: figma-intake
+    generates: figma/intake.md
+    description: Figma skill intake contract and summary-only planning cache. Must use figma-mcp-cache when Figma input exists.
+    template: figma-intake.md
+    instruction: >
+      Create `figma/intake.md` as the Figma intake, cache summary, and visual
+      acceptance bridge for this OpenSpec change.
+
+
+      Use Chinese for communication and explanation by default. Keep technical
+      terms, identifiers, commands, paths, filenames, environment variables,
+      config keys, error messages, logs, and URLs unchanged.
+
+
+      Mandatory rule: Figma data retrieval MUST go through the
+      `figma-mcp-cache` Skill. The main agent and the OpenSpec workflow MUST
+      NOT call Figma MCP directly. This artifact records the Skill invocation
+      inputs, cache paths, retrieval status, visual constraints, UI states,
+      known gaps, and acceptance requirements. It does not duplicate the
+      internal rules of `figma-mcp-cache`.
+
+
+      If proposal.md says Figma is applicable:
+
+      - Use `figma-mcp-cache profile=summary` only. This is the FF/continue
+      planning pull for summaries, screenshots, variables or metadata when
+      useful, component candidates, risks, and gaps.
+
+      - Record the returned summary cache path, source identity, files written
+      or reused, missing artifacts, risks, and gaps.
+
+      - Do not request `profile=full` in this artifact. Do not require
+      `figma.design-context.tsx`, `figma.assets.json`, downloaded `assets/`, or
+      `apply-intake.md` to exist during FF/continue planning.
+
+      - Stop and mark this artifact blocked if required cache evidence is
+      missing.
+
+
+      If Figma is not applicable, still create `figma/intake.md` with explicit
+      `Not applicable` status and explain why visual hard-gate checks do not
+      apply.
+
+
+      This artifact can be generated in parallel with `specs` and
+      `repo-analysis` after `proposal.md` exists. Runtime strategy:
+
+      - Strong Figma dependency: complete this summary pull and repo analysis
+      before final specs/design/tasks are written.
+
+      - Weak Figma dependency: specs/design may draft in parallel, but tasks
+      must wait for reconciliation against this summary pull.
+
+
+      If Figma source, visual states, summary cache evidence, full cache status,
+      or visual constraints change during validation or post-apply bugfix,
+      backwrite this file.
+    requires:
+      - proposal
+
+  - id: repo-analysis
+    generates: analysis/repo-analysis.md
+    description: Repository, route, component, styling, API, and validation command analysis.
+    template: repo-analysis.md
+    instruction: >
+      Create `analysis/repo-analysis.md` from the current repository context.
+
+
+      Use Chinese for communication and explanation by default. Keep technical
+      terms, identifiers, commands, paths, filenames, environment variables,
+      config keys, error messages, logs, and URLs unchanged.
+
+
+      This artifact describes how the current project is organized and where
+      implementation should land. Analyze target routes, page files, existing
+      components, reusable components, state management, API/service layers,
+      styling systems, assets, test commands, risk files, and files or areas
+      that should not be changed.
+
+
+      Do not invent dependencies, APIs, component capabilities, or commands.
+      Prefer local repository evidence and existing conventions. Mark unknowns
+      explicitly.
+
+
+      This artifact can be generated in parallel with `specs` and
+      `figma-intake` after `proposal.md` exists. If repository assumptions,
+      route mapping, component reuse, styling strategy, API surfaces, validation
+      commands, or no-touch areas prove wrong during validation or post-apply
+      bugfix, backwrite this file.
+    requires:
+      - proposal
+
+  - id: design
+    generates: design.md
+    description: Technical design plus implementation mapping, component split, Figma-to-code mapping, file ownership, and parallelization guidance.
+    template: design.md
+    instruction: >
+      Create `design.md` after `specs`, `figma-intake`, and `repo-analysis`
+      are all complete.
+
+
+      Use Chinese for communication and explanation by default. Keep technical
+      terms, identifiers, commands, paths, filenames, environment variables,
+      config keys, error messages, logs, and URLs unchanged.
+
+
+      `design.md` owns the technical solution and implementation mapping. The
+      default workflow does not create a separate `implementation-plan.md`;
+      implementation-plan content belongs here unless the project is complex
+      enough to justify `design/component-plan.md`, `design/visual-mapping.md`,
+      or `design/implementation-map.md` as manually managed subdocuments.
+
+
+      Design MUST reconcile:
+
+      - business behavior from `specs/**/*.md`
+
+      - summary-level Figma cache and visual constraints from `figma/intake.md`
+
+      - repository evidence from `analysis/repo-analysis.md`
+
+
+      If Figma is applicable and `figma/intake.md` is blocked or missing
+      summary cache evidence, do not invent visual details. Mark design as
+      blocked and request a `figma-mcp-cache profile=summary` refresh through
+      `figma-intake`.
+
+
+      Do not require full-profile implementation artifacts during design.
+      `figma.design-context.tsx`, `figma.assets.json`, downloaded `assets/`,
+      and `apply-intake.md` are apply-stage inputs produced by
+      `figma-mcp-cache profile=full` when implementation needs them.
+
+
+      Required sections:
+
+      - Requirement Overview
+
+      - Business Flow Design
+
+      - API / Data Design
+
+      - State Management Design
+
+      - Component Design
+
+      - Figma-to-UI Mapping
+
+      - Repo Integration Mapping
+
+      - File Modification Scope
+
+      - Implementation Order
+
+      - Parallelization and Write Locks
+
+      - Validation Strategy
+
+      - Decisions / Trade-offs
+
+      - Risks and Mitigations
+
+      - Open Questions
+
+
+      If implementation path, API/data design, component decisions, Figma-to-UI
+      mapping, repository integration, write locks, or validation strategy
+      changes during validation or post-apply bugfix, backwrite this file.
+    requires:
+      - specs
+      - figma-intake
+      - repo-analysis
+
+  - id: tasks
+    generates: tasks.md
+    description: Single-responsibility executable checklist for apply with source, owner, write lock, parallel, done, and validate fields.
+    template: tasks.md
+    instruction: >
+      Create `tasks.md` from the reconciled `proposal.md`, `specs/**/*.md`,
+      `figma/intake.md`, `analysis/repo-analysis.md`, and `design.md`.
+
+
+      Use Chinese for communication and explanation by default. Keep technical
+      terms, identifiers, commands, paths, filenames, environment variables,
+      config keys, error messages, logs, and URLs unchanged.
+
+
+      IMPORTANT: The apply phase parses checkbox tasks. Every executable task
+      MUST start with `- [ ]`. Group tasks under numbered `##` headings.
+
+
+      Each task MUST include these fields:
+
+      - Source
+
+      - Owner
+
+      - Write Lock
+
+      - Parallel
+
+      - Figma
+
+      - Done
+
+      - Validate
+
+
+      Tasks must be single-responsibility, dependency ordered, and small enough
+      to complete in one focused session. Only mark `Parallel: yes` when write
+      locks and owner surfaces do not overlap and validation is explicit.
+
+
+      The `Figma` field MUST be one of:
+
+      - `none`: the task does not depend on Figma cache and can run while the
+      apply-stage full-profile subagent is still working.
+
+      - `summary`: the task only depends on `figma/intake.md` summary evidence.
+
+      - `full`: the task is a UI/Figma implementation or visual fidelity task
+      and MUST wait for apply-stage `figma-mcp-cache profile=full` outputs.
+
+
+      Include tasks for implementation, behavior validation, visual validation
+      when Figma applies, regression checks, and verification log updates. UI
+      implementation tasks that need design context, asset indexes, downloaded
+      assets, or apply intake MUST use `Figma: full`.
+
+
+      If task split, ordering, owner, write lock, parallel safety, done signal,
+      or validation command proves wrong during implementation or post-apply
+      bugfix, backwrite this file.
+    requires:
+      - design
+
+  - id: verification
+    generates: verification.md
+    description: Behavior, visual, technical, and regression verification log.
+    template: verification.md
+    instruction: >
+      Create or update `verification.md` as the delivery verification record
+      for this OpenSpec change.
+
+
+      Use Chinese for communication and explanation by default. Keep technical
+      terms, identifiers, commands, paths, filenames, environment variables,
+      config keys, error messages, logs, and URLs unchanged.
+
+
+      Verification MUST evaluate the implementation against `proposal.md`,
+      `specs/**/*.md`, `figma/intake.md`, `analysis/repo-analysis.md`,
+      `design.md`, and `tasks.md`.
+
+
+      Required coverage:
+
+      - business verification
+
+      - visual verification when Figma applies, including whether summary and
+      full cache evidence was used correctly
+
+      - technical verification
+
+      - regression verification
+
+      - command results
+
+      - screenshot or evidence paths
+
+      - remaining gaps
+
+
+      If verification discovers a concrete defect, visual QA failure, or
+      acceptance mismatch after apply, do not rewrite the main DAG by adding a
+      finding artifact. Start the post-apply `spec-finding-backwrite` flow and
+      write `findings/<date>-<slug>.md`.
+    requires:
+      - tasks
+
+apply:
+  requires:
+    - proposal
+    - specs
+    - figma-intake
+    - repo-analysis
+    - design
+    - tasks
+  tracks: tasks.md
+  instruction: |
+    Use Chinese for communication and explanation by default. Keep technical terms, identifiers, commands, paths, filenames, environment variables, config keys, error messages, logs, and URLs unchanged.
+
+    Read proposal.md, specs/**/*.md, figma/intake.md, analysis/repo-analysis.md, design.md, and tasks.md before changing code. Read verification.md if it exists, and update it with validation evidence before finishing.
+
+    If Figma input exists:
+    - Do not call Figma MCP directly.
+    - Use only the cache paths and retrieval status recorded in figma/intake.md.
+    - At apply entry, start a separate `figma-mcp-cache profile=full` subagent for the target Figma states recorded in figma/intake.md.
+    - The full-profile subagent writes or refreshes implementation-ready cache outputs such as figma.design-context.tsx, figma.assets.json, downloaded assets/, figma.variable-defs.json, figma.screenshot.png, and apply-intake.md under the state cache.
+    - The full-profile subagent must not edit source code, design.md, tasks.md, specs/**/*.md, or production assets.
+    - If subagent delegation cannot be used, stop before any Figma MCP retrieval. Do not fall back to main-thread Figma MCP calls.
+    - If required summary cache is missing or stale before apply, stop and request figma-intake to refresh through figma-mcp-cache profile=summary.
+    - If required full cache is missing or blocked, continue only with tasks marked `Figma: none` or `Figma: summary`; mark `Figma: full` tasks blocked until full cache is complete or the gap is resolved.
+
+    Work through tasks in dependency order and mark completed tasks as you go.
+
+    Independent tasks may be delegated to subagents only when:
+    - Parallel is yes
+    - Figma is none, or Figma is summary with summary cache available, or Figma is full with full cache complete
+    - Write Lock fields do not overlap
+    - Owner fields do not conflict
+    - Validate commands/checks are explicit
+
+    Subagents are not alone in the codebase. They must not revert user changes or changes made by other agents, and they must adapt to existing edits.
+
+    Keep changes scoped to the task. Preserve unrelated user changes.
+
+    Validate each completed task with the focused checks in tasks.md. Update figma/intake.md when apply-stage full cache status changes. Update verification.md with behavior, visual, command, regression, screenshot/evidence, Figma cache usage, and remaining-gap results.
+
+    Do not create findings during normal planning. Findings are post-apply records only.
+
+    If user feedback, verification, or visual QA discovers a concrete defect after implementation, use the post-apply spec-finding-backwrite flow:
+    - reproduce the issue
+    - identify root cause
+    - classify which artifact was wrong or incomplete
+    - apply the smallest correct fix
+    - re-verify
+    - backwrite affected artifacts
+    - create findings/<date>-<slug>.md from templates/finding.md
+
+    Backwrite matrix for findings:
+    - Scope, acceptance, or PRD changed: proposal.md
+    - Business behavior, scenarios, boundary conditions, or acceptance result changed: specs/**/*.md
+    - Figma source, visual state, visual constraint, or cache evidence changed: figma/intake.md
+    - Repository assumption changed: analysis/repo-analysis.md
+    - Technical design, implementation path, API, component, Figma-to-UI mapping, or validation strategy changed: design.md
+    - Task split, order, owner, write lock, or validation changed: tasks.md
+    - Verification method or result changed: verification.md
+    - Code bug only and artifacts were already correct: write the finding and mark "No artifact backwrite required"
+
+    Pause if you hit blockers or need clarification.

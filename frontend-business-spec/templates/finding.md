@@ -1,56 +1,72 @@
-## Finding Summary
+# Finding: <issue title>
 
-- **Date:** <!-- YYYY-MM-DD -->
-- **Slug:** <!-- kebab-case short name -->
-- **Trigger:** <!-- user feedback / verification defect / visual QA failure / acceptance change -->
-- **Status:** <!-- open/fixed/blocked/no artifact backwrite required -->
+## 1. User Report
 
-## User Feedback / Issue
+- Reported at:
+- User description:
+- Related route / page:
+- Related Figma source:
+- Related spec:
+- Related task:
+- Related verification item:
 
-<!-- Original feedback, defect report, or acceptance change. -->
+## 2. Reproduction
 
-## Reproduction
+- Environment:
+- Steps:
+- Expected:
+- Actual:
+- Reproducible: yes | no
+- Evidence:
 
-- **Steps:** <!-- concrete reproduction steps or why unavailable -->
-- **Expected Result:** <!-- expected behavior/visual result -->
-- **Actual Result:** <!-- observed behavior/visual result -->
-- **Evidence:** <!-- logs, screenshots, command output summaries, paths -->
+## 3. Root Cause
 
-## Root Cause
+Root cause type:
 
-<!-- Most defensible root cause with affected surface and why the existing artifacts/code allowed it. -->
+- [ ] Proposal / PRD scope or acceptance issue
+- [ ] Business Spec behavior issue
+- [ ] Figma intake / visual restoration issue
+- [ ] Repo analysis assumption issue
+- [ ] Design decision / implementation path issue
+- [ ] Task breakdown / task order issue
+- [ ] Verification gap
+- [ ] Pure code bug, documents are still correct
 
-## Classification
+## 4. Minimal Fix Plan
 
-- **Problem Type:** <!-- scope/acceptance, business behavior, design, Figma intake, repo analysis, task breakdown, verification, code-only bug -->
-- **Affected Artifacts:** <!-- proposal.md/specs/**/*.md/figma/intake.md/analysis/repo-analysis.md/design.md/tasks.md/verification.md/None -->
+- Files/modules to touch:
+- Files/modules to avoid:
+- Why this is the smallest correct fix:
+- Alternatives rejected:
 
-## Minimal Fix Plan
+## 5. Fix Applied
 
-<!-- Smallest correct code/doc/process fix. -->
+- Code changes:
+- Document changes:
+- Remaining gaps:
 
-## Fix Record
+## 6. Re-Verification
 
-<!-- Files changed, artifacts backwritten, and implementation notes. -->
+- Behavior verification:
+- Visual verification:
+- Regression verification:
+- Commands:
+- Evidence:
 
-## Re-Verification
+## 7. Documentation Backwrite Matrix
 
-| Check | Command / Method | Result | Notes |
-| --- | --- | --- | --- |
-| <!-- check --> | <!-- command/method --> | <!-- pass/fail/blocked --> | <!-- notes --> |
+| Artifact | Update Needed | Reason | Status |
+|---|---:|---|---|
+| proposal.md | yes/no | Scope or acceptance changed | pending/done/no |
+| specs/**/*.md | yes/no | Business behavior or scenario changed | pending/done/no |
+| figma/intake.md | yes/no | Figma source or visual constraint changed | pending/done/no |
+| analysis/repo-analysis.md | yes/no | Repo assumption changed | pending/done/no |
+| design.md | yes/no | Implementation path or decision changed | pending/done/no |
+| tasks.md | yes/no | Task split, order, owner, write lock, or validation changed | pending/done/no |
+| verification.md | yes/no | Verification result or validation method changed | pending/done/no |
 
-## Document Backwrite Matrix
+## 8. Archive Notes
 
-| Artifact | Backwrite Required | Reason | Completed |
-| --- | --- | --- | --- |
-| proposal.md | <!-- yes/no --> | <!-- reason --> | <!-- yes/no/not-applicable --> |
-| specs/**/*.md | <!-- yes/no --> | <!-- reason --> | <!-- yes/no/not-applicable --> |
-| figma/intake.md | <!-- yes/no --> | <!-- reason --> | <!-- yes/no/not-applicable --> |
-| analysis/repo-analysis.md | <!-- yes/no --> | <!-- reason --> | <!-- yes/no/not-applicable --> |
-| design.md | <!-- yes/no --> | <!-- reason --> | <!-- yes/no/not-applicable --> |
-| tasks.md | <!-- yes/no --> | <!-- reason --> | <!-- yes/no/not-applicable --> |
-| verification.md | <!-- yes/no --> | <!-- reason --> | <!-- yes/no/not-applicable --> |
-
-## Archive Notes
-
-<!-- Whether this finding is resolved, blocked, or intentionally archived with no artifact backwrite required. -->
+- Backwrite completed:
+- No backwrite required because:
+- Follow-up required:

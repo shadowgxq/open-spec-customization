@@ -1,30 +1,34 @@
-## 1. <!-- Task Group Name -->
+# Tasks
 
-- [ ] 1.1 <!-- task title -->
-  - Source: <!-- proposal.md/specs/<capability>/spec.md/figma/intake.md/analysis/repo-analysis.md/design.md reference -->
-  - Owner: <!-- file/module/surface owner -->
-  - Write Lock: <!-- exact file/module/surface lock -->
-  - Parallel: <!-- yes/no -->
-  - Figma: <!-- none/summary/full -->
-  - Done: <!-- completion signal -->
-  - Validate: <!-- command/check/evidence -->
+## Status
 
-- [ ] 1.2 <!-- task title -->
-  - Source: <!-- source reference -->
-  - Owner: <!-- file/module/surface owner -->
-  - Write Lock: <!-- exact file/module/surface lock -->
-  - Parallel: <!-- yes/no -->
-  - Figma: <!-- none/summary/full -->
-  - Done: <!-- completion signal -->
-  - Validate: <!-- command/check/evidence -->
+- State: draft | ready | blocked | superseded
+- Owner:
+- Last Updated:
+- Blocked By:
 
-## 2. Verification Updates
+## 1. <Task Group>
 
-- [ ] 2.1 Update verification log for completed behavior and technical checks
-  - Source: verification.md; tasks.md
-  - Owner: verification.md
-  - Write Lock: verification.md
-  - Parallel: no
-  - Figma: none
-  - Done: verification.md records command results, evidence, and remaining gaps
-  - Validate: review verification.md against proposal.md, specs/**/*.md, figma/intake.md, analysis/repo-analysis.md, design.md, and tasks.md
+- [ ] 1.1 <single responsibility task>
+  - Source:
+  - Depends On:
+  - Preconditions:
+  - Owner:
+  - Write Lock:
+  - Parallel: yes | no
+  - Figma: none | summary | full
+  - Done:
+  - Validate:
+
+## 2. Validation
+
+- [ ] 2.1 <validation task>
+  - Source:
+  - Depends On:
+  - Preconditions:
+  - Owner:
+  - Write Lock:
+  - Parallel: yes | no
+  - Figma: none | summary | full
+  - Done:
+  - Validate:

@@ -1,151 +1,207 @@
 # frontend-business-spec
 
-`frontend-business-spec` 是面向前端业务功能交付的 user-level OpenSpec 自定义 schema。
+`frontend-business-spec` 是一个面向前端业务功能交付的 OpenSpec 自定义工作流。
 
-它把业务 Spec、Figma Skill 输入、Repo 分析、技术设计、执行任务、交付验证和用户验收后的 bugfix 回写闭环放进同一个 workflow。核心边界是：OpenSpec 管 artifact DAG 和验收承接，Figma 数据获取必须交给 `figma-mcp-cache` Skill，findings 只在 post-apply / post-user-validation 阶段生成。
+它解决的问题：
 
-## Workflow
+```text
+业务需求如何转成稳定的前端实现
+Figma 视觉还原如何接入 OpenSpec
+代码仓库分析如何参与设计
+apply 阶段如何安全并行
+用户验收后的 bug 如何复现、修复、回写文档
+```
+
+核心原则：
+
+```text
+specs 只写业务行为
+figma-intake 只承接 Figma Skill 输出
+repo-analysis 只分析代码现状
+design 负责技术设计 + 实现映射
+tasks 负责可执行任务
+verification 负责验收计划和执行结果
+findings 只在用户验收后触发
+```
+
+## 主流程
 
 ```text
 proposal
    ↓
-specs / figma-intake(profile=summary) / repo-analysis
-   ↓
-design
-   ↓
-tasks
-   ↓
-apply + figma-mcp-cache(profile=full) subagent
-   ↓
-verification
-
-post-apply:
-user feedback / verification defect / visual QA failure
-   ↓
-spec-finding-backwrite
-   ↓
-findings/<date>-<slug>.md
-   ↓
-root cause -> minimal fix -> docs backwrite -> re-verify
+┌────────────────┬────────────────────┬────────────────┐
+↓                ↓                    ↓
+specs        figma-intake          repo-analysis
+业务行为       Figma Skill 输入       代码仓库分析
+↓                ↓                    ↓
+└────────────────┴────────────────────┘
+                 ↓
+              design
+                 ↓
+              tasks
+                 ↓
+              apply
+                 ↓
+           verification
 ```
 
-## Artifacts
+用户验收后：
+
+```text
+user feedback / verification defect
+        ↓
+spec-finding-backwrite skill
+        ↓
+findings/<date>-<slug>.md
+        ↓
+reproduce → root cause → minimal fix → docs backwrite → re-verify
+```
+
+## Artifact 一览
 
 | Artifact | Output | Responsibility |
 | --- | --- | --- |
-| `proposal` | `proposal.md` | PRD-style scope, scenarios, acceptance, Figma applicability, capability list |
-| `specs` | `specs/**/*.md` | Business behavior, user scenarios, error scenarios, boundary conditions, acceptance results |
-| `figma-intake` | `figma/intake.md` | `figma-mcp-cache profile=summary` input/output archive, cache paths, visual constraints, UI states, known gaps, apply full-cache status |
-| `repo-analysis` | `analysis/repo-analysis.md` | Routes, pages, components, state/data flow, API/service layers, styling, tests, risk and no-touch areas |
-| `design` | `design.md` | Technical design, implementation mapping, Figma-to-UI mapping, file scope, parallel boundaries, validation strategy |
-| `tasks` | `tasks.md` | Executable checklist with `Source`, `Owner`, `Write Lock`, `Parallel`, `Done`, and `Validate` |
-| `verification` | `verification.md` | Business, visual, technical, regression, command, screenshot/evidence, and remaining-gap verification |
+| `proposal` | `proposal.md` | PRD-style source of truth for scope, user scenarios, acceptance, and optional Figma input |
+| `specs` | `specs/**/*.md` | Business behavior and scenario specifications |
+| `figma-intake` | `figma/intake.md` | Figma skill intake contract, cache summary, visual constraints, and known gaps |
+| `repo-analysis` | `analysis/repo-analysis.md` | Repository, route, component, styling, API, state, validation, and reuse analysis |
+| `design` | `design.md` | Technical design, implementation mapping, component split, Figma mapping, and parallelization guidance |
+| `tasks` | `tasks.md` | Single-responsibility executable tasks for apply |
+| `verification` | `verification.md` | Verification plan before apply and execution log after apply |
 
-## Figma Rule
+## 模板约束
 
-Figma 数据获取必须使用 `figma-mcp-cache` Skill：
+- `proposal.md`：PRD 风格，包含 scope、acceptance 和 Figma input。
+- `specs/**/*.md`：只写业务行为、场景、边界和验收，不写实现细节。
+- `figma/intake.md`：只记录 `figma-mcp-cache` Skill 输出、cache path、视觉约束和 known gaps。
+- `analysis/repo-analysis.md`：只分析仓库现状、可复用面、风险面和验证命令。
+- `design.md`：写技术设计、组件拆分、实现映射、并行边界和验证策略，不写 checkbox tasks。
+- `tasks.md`：每个 task 必须单一职责，必须可验证，并包含 `Depends On`。
+- `verification.md`：apply 前是 plan，apply 后必须回填 execution results。
+- `findings/*.md`：只在用户验收后或 verification 发现明确 defect 后创建。
 
-- Figma URL parsing
-- Figma MCP reads
-- screenshots
-- metadata
-- variables
-- component candidates
-- apply-stage design context
-- apply-stage assets
-- summary planning cache and apply full cache
+## Figma 规则
 
-主 agent 和 OpenSpec 主流程不得直接调用 Figma MCP。`figma/intake.md` 只记录 Skill 输入、输出、cache path、retrieval status、视觉约束和验收承接关系，不复制 `figma-mcp-cache` 的内部规范。
+```text
+Figma 数据获取必须走 figma-mcp-cache。
+主 agent 不允许直接调用 Figma MCP。
+figma-intake 只记录 Skill 输出和 cache 结果。
+Figma: full 的 task 必须有 full cache。
+```
 
-如果没有 Figma 输入，也必须生成 `figma/intake.md`，状态写为 `Not applicable`，并说明视觉 hard gate 不适用。
+补充约束：
 
-## FF Parallel Strategy
+- 如果 `Figma Dependency = none`，也必须生成 `figma/intake.md`，并写 `Not applicable`。
+- `figma/intake.md` 不复制 `figma-mcp-cache` 内部命令。
+- 主流程只消费 `figma/intake.md` 记录的 cache path、缺失项和视觉约束。
 
-FF / continue 阶段只执行 `figma-mcp-cache profile=summary`。这个阶段的目标是为 `specs`、`design` 和 `tasks` 提供规划级 Figma 证据，不拉完整实现上下文。
+## Apply 并行规则
 
-强依赖策略：
+```text
+只有满足以下条件才能并行：
+Parallel = yes
+Write Lock 不重叠
+Owner 不冲突
+Depends On 已完成
+Validate 明确
+```
+
+`apply` 阶段必须先读取：
 
 ```text
 proposal.md
-  ↓
-第一波并行：
-  ├─ figma-mcp-cache(profile=summary)
-  └─ repo-analysis
-  ↓
-第二波并行：
-  ├─ specs
-  └─ design
-  ↓
-tasks
+specs/**/*.md
+figma/intake.md
+analysis/repo-analysis.md
+design.md
+tasks.md
+verification.md
 ```
 
-适用场景：纯 UI 还原、全新页面、高度还原、`Visual Hard Gate: yes`。
+然后按 `Depends On` 顺序执行任务，并在执行过程中同步更新：
 
-弱依赖策略：
+- `tasks.md`
+- `verification.md`
+
+如果任务标记为 `Figma: full` 但缺少 full cache，停止并刷新 `figma-intake`，不要直接绕过约束。
+
+## Findings 规则
 
 ```text
-proposal.md
-  ↓
-乐观并行：
-  ├─ figma-mcp-cache(profile=summary)
-  ├─ repo-analysis
-  ├─ specs draft
-  └─ design draft
-  ↓
-reconcile
-  ↓
-tasks
+findings 不进入主 DAG。
+findings 只在用户验收后或 verification 发现明确 defect 后触发。
+触发后使用 spec-finding-backwrite skill。
+finding 必须包含复现、根因、最小修复、回写矩阵、重新验证。
 ```
 
-适用场景：功能为主、Figma 只是样式参考、现有页面局部样式调整。无论强弱依赖，`tasks.md` 都必须等 summary intake 与 repo analysis 被 reconciled 后再生成。
-
-## Apply Figma Strategy
-
-进入 apply 且 Figma applicable 时，主流程必须启动一个单独的 `figma-mcp-cache profile=full` subagent 补充实现级缓存。这个 subagent 写入 state cache，例如：
-
-- `figma.design-context.tsx`
-- `figma.assets.json`
-- `figma.variable-defs.json`
-- `figma.screenshot.png`
-- `assets/`
-- `apply-intake.md`
-
-full-profile subagent 不直接写业务代码，不改 `proposal.md`、`specs/**/*.md`、`design.md` 或 `tasks.md`。主 agent 根据 `tasks.md` 执行：
-
-- `Figma: none`：不依赖 Figma，可在 full subagent 运行时继续执行。
-- `Figma: summary`：只依赖 `figma/intake.md` 的 summary 规划证据。
-- `Figma: full`：必须等待 full cache 完成；如果 full cache blocked，则该 task blocked，不能猜测缺失设计数据。
-
-## Findings
-
-`findings` 不进入主 artifact DAG。不要把 workflow 写成：
+## 推荐目录结构
 
 ```text
-proposal -> specs -> design -> tasks -> apply -> finding
+frontend-business-spec/
+  schema.yaml
+  README.md
+  templates/
+    proposal.md
+    spec.md
+    figma-intake.md
+    repo-analysis.md
+    design.md
+    tasks.md
+    verification.md
+    finding.md
+
+openspec/changes/<change-id>/
+  proposal.md
+  design.md
+  tasks.md
+  verification.md
+
+  specs/
+    <capability>/spec.md
+
+  figma/
+    intake.md
+
+  analysis/
+    repo-analysis.md
+
+  findings/
+    <date>-<slug>.md
 ```
 
-正确触发方式是主流程完成后，由用户验收、verification、visual QA 或验收口径变化触发 `spec-finding-backwrite`：
+## 执行规则
+
+主流程：
 
 ```text
-openspec/changes/<change-id>/findings/<date>-<slug>.md
+proposal 完成后，并行启动：
+1. specs subagent
+2. figma-intake subagent
+3. repo-analysis subagent
+
+三者全部完成后，才能生成 design.md。
+design.md 完成后，生成 tasks.md。
+tasks.md 完成后，进入 apply。
+apply 后更新 verification.md。
 ```
 
-Finding 必须记录用户反馈、复现步骤、期望结果、实际结果、根因定位、问题分类、最小修复方案、修复记录、重新验证、文档回写矩阵和归档说明。
+最终工作流：
 
-## Backwrite Matrix
+```text
+proposal
+→ specs / figma-intake / repo-analysis 并行
+→ design
+→ tasks
+→ apply
+→ verification
 
-| Problem Type | Backwrite Target |
-| --- | --- |
-| Scope, acceptance, PRD changed | `proposal.md` |
-| Business behavior, scenarios, boundary conditions, acceptance result changed | `specs/**/*.md` |
-| Figma source, visual state, visual constraint, cache evidence changed | `figma/intake.md` |
-| Repository assumptions changed | `analysis/repo-analysis.md` |
-| Technical design, implementation path, API, component, Figma-to-UI mapping, validation strategy changed | `design.md` |
-| Task split, order, owner, write lock, validation changed | `tasks.md` |
-| Verification method or result changed | `verification.md` |
-| Code bug only and artifacts were correct | only `findings/*.md`, mark `No artifact backwrite required` |
+post-apply:
+→ spec-finding-backwrite
+→ findings/*.md
+→ docs backwrite
+```
 
-## Usage
+## 使用方式
 
 ```bash
 openspec schema which frontend-business-spec
@@ -156,17 +212,3 @@ openspec new change <change-id> --schema frontend-business-spec
 openspec instructions proposal --schema frontend-business-spec
 openspec instructions apply --schema frontend-business-spec
 ```
-
-To make it the default schema for a project:
-
-```yaml
-# openspec/config.yaml
-schema: frontend-business-spec
-```
-
-## Maintenance Notes
-
-- `schema.yaml` only uses OpenSpec's supported `artifacts` and `apply` fields so `openspec schema validate frontend-business-spec` can validate it.
-- Parallel orchestration is represented through artifact dependencies and instructions: `specs`, `figma-intake`, and `repo-analysis` all require only `proposal`, so they can run in parallel. Runtime instructions distinguish strong dependency two-wave parallelism from weak dependency optimistic parallelism.
-- `templates/finding.md` is intentionally unregistered. It is used by the post-apply `spec-finding-backwrite` flow, not by normal artifact generation.
-- `implementation-plan.md` is not a default artifact. Its content belongs in `design.md`; complex projects can manually extend under `design/`.

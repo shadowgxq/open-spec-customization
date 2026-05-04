@@ -1,47 +1,42 @@
-## Verification Status
+# Verification
 
-- **Status:** <!-- pending/pass/fail/blocked -->
-- **Verified At:** <!-- YYYY-MM-DD or pending -->
-- **Verifier:** <!-- agent/user/person -->
+## Status
 
-## Business Verification
+- State: draft | ready | blocked | superseded
+- Owner:
+- Last Updated:
+- Blocked By:
 
-| Source | Scenario / Requirement | Result | Evidence |
-| --- | --- | --- | --- |
-| <!-- proposal.md or specs path --> | <!-- scenario/requirement --> | <!-- pass/fail/blocked --> | <!-- notes/path --> |
+## Verification Scope
 
-## Visual Verification
+## Behavior Verification Plan
 
-- **Figma Applicable:** <!-- yes/no -->
-- **Visual Hard Gate:** <!-- yes/no -->
-- **Reference Source:** <!-- figma/intake.md cache path or Not applicable -->
+| Requirement | Scenario | Method | Expected |
+|---|---|---|---|
 
-## Figma Cache Usage
+## Visual Verification Plan
 
-- **Summary Cache Used:** <!-- yes/no/not-applicable -->
-- **Full Cache Status:** <!-- not-started/running/complete/blocked/not-applicable -->
-- **Apply Intake Path:** <!-- path or Not applicable -->
-- **Full Cache Blocked Tasks:** <!-- task ids or None/Not applicable -->
-- **Non-UI Tasks Completed While Full Cache Ran:** <!-- task ids or None/Not applicable -->
+| UI State | Evidence Needed | Method | Expected |
+|---|---|---|---|
 
-| Viewport / State | Result | Screenshot / Evidence | Notes |
-| --- | --- | --- | --- |
-| <!-- viewport/state --> | <!-- pass/fail/blocked/not-applicable --> | <!-- path --> | <!-- notes --> |
+## Technical Verification Plan
 
-## Technical Verification
+| Area | Command / Check | Expected |
+|---|---|---|
 
-| Check | Command / Method | Result | Notes |
-| --- | --- | --- | --- |
-| <!-- typecheck/lint/test/build/etc. --> | <!-- command --> | <!-- pass/fail/blocked --> | <!-- output summary --> |
+## Regression Verification Plan
 
-## Regression Verification
+| Surface | Method | Expected |
+|---|---|---|
 
-<!-- Regression areas checked based on analysis/repo-analysis.md, design.md, and tasks.md. -->
+## Execution Results
+
+| Check | Result | Evidence | Notes |
+|---|---|---|---|
 
 ## Remaining Gaps
 
-<!-- Known gaps, deferred checks, blocked evidence, or None. -->
+## Findings Required
 
-## Findings Trigger
-
-<!-- If user feedback, verification, or visual QA discovers a concrete post-apply defect, create findings/<date>-<slug>.md through the spec-finding-backwrite flow. Otherwise write: No findings required. -->
+- yes | no
+- Reason:
